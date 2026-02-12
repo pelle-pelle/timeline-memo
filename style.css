@@ -1,0 +1,113 @@
+/* 全体の設定 */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #ffffff;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+/* ヘッダー */
+header {
+  width: 100%;
+  padding: 15px;
+  background: #fff;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  border-bottom: 1px solid #eee;
+  font-weight: bold;
+}
+
+/* コンテナ */
+#timeline-container {
+  padding: 0 15px 100px 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 追従する年ラベル */
+.year-section {
+  position: relative;
+}
+
+.year-header {
+  position: sticky;
+  top: 50px; /* ヘッダーの高さ */
+  background-color: #fff;
+  padding: 15px 0 10px 0;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4a90e2;
+  z-index: 100;
+}
+
+/* 月の行（横並びレイアウト） */
+.month-row {
+  display: flex;
+  align-items: flex-start;
+  border-bottom: 1px solid #f9f9f9;
+  transition: background-color 0.3s ease;
+}
+
+/* メモがある時の背景色（ベージュ） */
+.has-content {
+  background-color: #fcf8f0;
+}
+
+/* 左：月表示 */
+.month-label {
+  width: 50px;
+  padding: 15px 0;
+  text-align: center;
+  font-weight: bold;
+  color: #888;
+  flex-shrink: 0;
+}
+
+/* 中央：区切り線 */
+.divider {
+  width: 2px;
+  background-color: #eee;
+  align-self: stretch;
+  position: relative;
+}
+
+.divider::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+  background: #4a90e2;
+  border-radius: 50%;
+}
+
+/* 入力がある月はドットの色を強調 */
+.has-content .divider::after {
+  background: #f39c12;
+}
+
+/* 右：メモエリア */
+.memo-area {
+  flex-grow: 1;
+  padding: 10px 0 10px 15px;
+}
+
+textarea {
+  width: 100%;
+  border: none;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  background: transparent;
+  color: #444;
+  display: block;
+  field-sizing: content; /* 入力量に合わせて自動で広がる */
+  min-height: 2em;
+}
