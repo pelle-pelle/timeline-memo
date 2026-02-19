@@ -1,212 +1,142 @@
 body {
-  font-family: sans-serif;
-  background: #f4f7f6;
+  font-family: -apple-system, sans-serif;
   margin: 0;
-  padding: 20px;
-  color: #333;
+  padding: 0;
+  overflow-x: hidden; /* 横スクロールバーを出さない */
 }
-.container {
-  max-width: 1200px;
+
+/* タブヘッダー */
+header {
+  width: 100%;
+  background: #fff;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-container {
+  display: flex;
+  max-width: 600px;
   margin: 0 auto;
 }
 
-/* パネル類 */
-.controls,
-.form-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
-}
-.control-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-bottom: 15px;
-}
-.control-group h3 {
-  margin: 0 0 8px 0;
-  font-size: 13px;
-  color: #888;
-  text-transform: uppercase;
-}
-
-/* 年表エリア */
-/* style.css */
-
-/* 1. 年の「窓」：画面幅に固定し、はみ出た分を隠す */
-#axis-window {
-  width: 100%;
-  overflow: hidden; /* はみ出た「年」を隠す */
-  border-bottom: 2px solid #3498db;
-  position: sticky; /* 画面上部に固定したい場合はこれ */
-  top: 0;
-  z-index: 100;
-}
-
-/* 2. 年の「中身」：JSで横幅を長く伸ばす土台 */
-#timeline-axis {
-  position: relative;
-  height: 35px;
-}
-
-/* 3. 人物の「窓」：ここは今まで通りスクロール可能に */
-#timeline-container {
-  width: 100%;
-  overflow-x: auto; /* ここでスクロールさせる */
-  position: relative;
-  height: 450px;
-}
-
-#era-background,
-#timeline-bars {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* 年表内のバー */
-.person-bar {
-  position: absolute;
-  height: 32px;
-  line-height: 26px;
-  padding: 0 10px;
-  border-radius: 4px;
-  color: white;
-  font-size: 11px;
-  font-weight: bold;
-  cursor: pointer;
-  box-sizing: border-box;
-  border: 3px solid transparent;
-  white-space: nowrap;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
-
-/* フィルタ・タグ */
-.filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.tag-selector {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.tag-option {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-}
-.tag-option.selected {
-  border-color: #333;
-  transform: scale(1.1);
-}
-.tag-filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 15px;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  font-size: 11px;
-  background: #fff;
-}
-.tag-filter-btn.inactive {
-  opacity: 0.3;
-}
-.tag-filter-btn .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-/* ボタン・その他 */
-.btn {
+.tab {
+  flex: 1;
+  padding: 15px;
   border: none;
-  border-radius: 4px;
+  background: none;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #999;
   cursor: pointer;
-  padding: 8px 15px;
+  transition: 0.3s;
+}
+
+.tab.active {
+  color: #4a90e2;
+  border-bottom: 3px solid #4a90e2;
+}
+
+/* スライダー構造 */
+#view-viewport {
+  width: 100vw;
+  margin-top: 55px; /* ヘッダー分 */
+  overflow: hidden;
+}
+
+#view-slider {
+  display: flex;
+  width: 200vw; /* 2画面分 */
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* 表示切り替え用クラス */
+#view-slider.show-log {
+  transform: translateX(0);
+}
+#view-slider.show-plan {
+  transform: translateX(-100vw);
+}
+
+.timeline-view {
+  width: 100vw;
+  min-height: 100vh;
+}
+
+.timeline-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 15px 100px 15px;
+}
+
+/* 共通パーツ（年ヘッダー・行） */
+.year-header {
+  position: sticky;
+  top: 54px; /* タブの下に張り付く */
+  background-color: #f8f8f8;
+  padding: 10px 15px;
   font-weight: bold;
+  z-index: 100;
+  border-bottom: 1px solid #eee;
 }
-.btn-sm {
-  padding: 4px 10px;
-  font-size: 11px;
+
+.month-row {
+  display: flex;
+  border-bottom: 1px solid #f9f9f9;
 }
-.btn-primary {
-  background: #3498db;
-  color: white;
+
+.has-content {
+  background-color: #fcf8f0;
 }
-.btn-secondary {
-  background: #95a5a6;
-  color: white;
+
+.month-label {
+  width: 50px;
+  padding: 20px 0;
+  text-align: center;
+  font-weight: bold;
+  color: #aaa;
+  flex-shrink: 0;
 }
-.btn-danger {
-  background: #e74c3c;
-  color: white;
+
+.divider {
+  width: 2px;
+  background-color: #eee;
+  align-self: stretch;
+  position: relative;
 }
-.hidden {
-  display: none !important;
+
+.divider::after {
+  content: "";
+  position: absolute;
+  top: 25px;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+  background: #ddd;
+  border-radius: 50%;
 }
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+
+/* 実績は青、予定は緑などドットの色を変えるとわかりやすい */
+#log-view .has-content .divider::after {
+  background: #4a90e2;
 }
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
+#plan-view .has-content .divider::after {
+  background: #2ecc71;
+}
+
+.memo-area {
+  flex: 1;
+  padding: 15px;
+}
+
+textarea {
   width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.modal-content {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  width: 400px;
-}
-.year-label {
-  position: absolute;
-  top: 8px;
-  font-size: 11px;
-  border-left: 1px solid #3498db;
-  padding-left: 3px;
-  color: #3498db;
-}
-.era-region {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  padding-top: 10px;
-  border-right: 1px dashed rgba(0, 0, 0, 0.1);
-}
-.era-region span {
-  writing-mode: vertical-rl;
-  font-size: 14px;
-  font-weight: bold;
-  color: rgba(0, 0, 0, 0.2);
-}
-.tooltip {
-  position: fixed;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px;
-  border-radius: 4px;
-  pointer-events: none;
-  display: none;
-  z-index: 2000;
-  font-size: 12px;
+  border: none;
+  font-size: 1rem;
+  resize: none;
+  outline: none;
+  background: transparent;
+  field-sizing: content;
+  min-height: 2em;
 }
