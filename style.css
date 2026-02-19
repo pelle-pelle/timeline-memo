@@ -1,113 +1,212 @@
-/* 全体の設定 */
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #ffffff;
+  font-family: sans-serif;
+  background: #f4f7f6;
   margin: 0;
-  padding: 0;
+  padding: 20px;
   color: #333;
 }
-
-/* ヘッダー */
-header {
-  width: 100%;
-  padding: 15px;
-  background: #fff;
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  border-bottom: 1px solid #eee;
-  font-weight: bold;
-}
-
-/* コンテナ */
-#timeline-container {
-  padding: 0 15px 100px 15px;
-  max-width: 600px;
+.container {
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-/* 追従する年ラベル */
-.year-section {
-  position: relative;
+/* パネル類 */
+.controls,
+.form-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+.control-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+.control-group h3 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #888;
+  text-transform: uppercase;
 }
 
-.year-header {
-  position: sticky;
-  top: 50px; /* ヘッダーの高さ */
-  background-color: #fff;
-  padding: 15px 0 10px 0;
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #4a90e2;
+/* 年表エリア */
+/* style.css */
+
+/* 1. 年の「窓」：画面幅に固定し、はみ出た分を隠す */
+#axis-window {
+  width: 100%;
+  overflow: hidden; /* はみ出た「年」を隠す */
+  border-bottom: 2px solid #3498db;
+  position: sticky; /* 画面上部に固定したい場合はこれ */
+  top: 0;
   z-index: 100;
 }
 
-/* 月の行（横並びレイアウト） */
-.month-row {
-  display: flex;
-  align-items: flex-start;
-  border-bottom: 1px solid #f9f9f9;
-  transition: background-color 0.3s ease;
-}
-
-/* メモがある時の背景色（ベージュ） */
-.has-content {
-  background-color: #fcf8f0;
-}
-
-/* 左：月表示 */
-.month-label {
-  width: 50px;
-  padding: 15px 0;
-  text-align: center;
-  font-weight: bold;
-  color: #888;
-  flex-shrink: 0;
-}
-
-/* 中央：区切り線 */
-.divider {
-  width: 2px;
-  background-color: #eee;
-  align-self: stretch;
+/* 2. 年の「中身」：JSで横幅を長く伸ばす土台 */
+#timeline-axis {
   position: relative;
+  height: 35px;
 }
 
-.divider::after {
-  content: "";
+/* 3. 人物の「窓」：ここは今まで通りスクロール可能に */
+#timeline-container {
+  width: 100%;
+  overflow-x: auto; /* ここでスクロールさせる */
+  position: relative;
+  height: 450px;
+}
+
+#era-background,
+#timeline-bars {
   position: absolute;
-  top: 20px;
-  left: -3px;
-  width: 8px;
-  height: 8px;
-  background: #4a90e2;
+  top: 0;
+  left: 0;
+}
+
+/* 年表内のバー */
+.person-bar {
+  position: absolute;
+  height: 32px;
+  line-height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  white-space: nowrap;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+/* フィルタ・タグ */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tag-option {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.tag-option.selected {
+  border-color: #333;
+  transform: scale(1.1);
+}
+.tag-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  font-size: 11px;
+  background: #fff;
+}
+.tag-filter-btn.inactive {
+  opacity: 0.3;
+}
+.tag-filter-btn .dot {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 
-/* 入力がある月はドットの色を強調 */
-.has-content .divider::after {
-  background: #f39c12;
-}
-
-/* 右：メモエリア */
-.memo-area {
-  flex-grow: 1;
-  padding: 10px 0 10px 15px;
-}
-
-textarea {
-  width: 100%;
+/* ボタン・その他 */
+.btn {
   border: none;
-  font-size: 1rem;
-  line-height: 1.6;
-  resize: none;
-  outline: none;
-  background: transparent;
-  color: #444;
-  display: block;
-  field-sizing: content; /* 入力量に合わせて自動で広がる */
-  min-height: 2em;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 8px 15px;
+  font-weight: bold;
+}
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+.btn-primary {
+  background: #3498db;
+  color: white;
+}
+.btn-secondary {
+  background: #95a5a6;
+  color: white;
+}
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+}
+.hidden {
+  display: none !important;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 400px;
+}
+.year-label {
+  position: absolute;
+  top: 8px;
+  font-size: 11px;
+  border-left: 1px solid #3498db;
+  padding-left: 3px;
+  color: #3498db;
+}
+.era-region {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  border-right: 1px dashed rgba(0, 0, 0, 0.1);
+}
+.era-region span {
+  writing-mode: vertical-rl;
+  font-size: 14px;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.2);
+}
+.tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  display: none;
+  z-index: 2000;
+  font-size: 12px;
 }
