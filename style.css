@@ -84,6 +84,7 @@ header {
 .month-row {
   display: flex;
   border-bottom: 1px solid #f9f9f9;
+  transition: background-color 0.3s ease;
 }
 
 .has-content {
@@ -117,12 +118,26 @@ header {
   border-radius: 50%;
 }
 
-/* 実績は青、予定は緑などドットの色を変えるとわかりやすい */
+/* 1. 実績 (Log) の入力あり：淡いベージュ */
+#log-view .has-content {
+  background-color: #fcf8f0;
+}
+
+/* 2. 予定 (Plan) の入力あり：淡いピンク */
+#plan-view .has-content {
+  background-color: #fff5f7; /* さくら色のような淡いピンク */
+}
+
+/* ドットの色もそれぞれのテーマに合わせる */
+
+/* Log：青系のドット */
 #log-view .has-content .divider::after {
   background: #4a90e2;
 }
+
+/* Plan：ピンク・赤系のドット */
 #plan-view .has-content .divider::after {
-  background: #2ecc71;
+  background: #ff8da1;
 }
 
 .memo-area {
