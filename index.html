@@ -15,6 +15,23 @@
         <button id="tab-plan" class="tab" onclick="switchView('plan')">
           予定 (Plan)
         </button>
+        <!-- ↓ここを追加（設定ボタン） -->
+        <button class="tab-settings" onclick="toggleSettings()">⚙️</button>
+      </div>
+
+      <!-- ↓ここを追加（設定メニュー本体：初期状態は隠れています） -->
+      <div id="settings-menu" class="hidden">
+        <button onclick="exportData()">保存(書き出し)</button>
+        <label class="file-label">
+          復元(読み込み)
+          <input
+            type="file"
+            id="import-file"
+            onchange="importData(event)"
+            accept=".json"
+            style="display: none"
+          />
+        </label>
       </div>
     </header>
 

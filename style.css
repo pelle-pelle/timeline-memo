@@ -155,3 +155,43 @@ textarea {
   field-sizing: content;
   min-height: 2em;
 }
+
+/* 設定ボタン（歯車） */
+.tab-settings {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  padding: 0 15px;
+  cursor: pointer;
+}
+
+/* 設定メニューの枠 */
+#settings-menu {
+  background: #444;
+  padding: 10px;
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+/* 隠すための設定 */
+#settings-menu.hidden {
+  display: none;
+}
+
+/* メニュー内のボタンとラベル */
+#settings-menu button,
+.file-label {
+  background: #666;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.file-label {
+  display: inline-block;
+}
