@@ -27,36 +27,184 @@ let touchEndX = 0;
 let touchEndY = 0;
 
 // -------------------------------------
+// 現在見ている年月を取得
+// -------------------------------------
+
+function getVisibleDatePosition(view) {
+  const section = document.getElementById(`${view}-view`);
+
+  if (!section) {
+    return null;
+  }
+
+  const rows = section.querySelectorAll(".month-row");
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  /*
+    画面の中央より少し上あたりを
+    「現在見ている年月」として判定します。
+  */
+  const referenceY = window.innerHeight * 0.4;
+
+  let closestRow = null;
+  let closestDistance = Infinity;
+
+  rows.forEach((row) => {
+    const rect = row.getBoundingClientRect();
+
+    /*
+      referenceY がその月の行の中にある場合は
+      その月を優先
+    */
+    if (rect.top <= referenceY && rect.bottom >= referenceY) {
+      closestRow = row;
+      closestDistance = 0;
+      return;
+    }
+
+    /*
+      それ以外の場合は
+      referenceY に一番近い月を探す
+    */
+    const rowCenter = rect.top + rect.height / 2;
+
+    const distance = Math.abs(rowCenter - referenceY);
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestRow = row;
+    }
+  });
+
+  if (!closestRow) {
+    return null;
+  }
+
+  const rect = closestRow.getBoundingClientRect();
+
+  return {
+    year: closestRow.dataset.year,
+    month: closestRow.dataset.month,
+
+    /*
+      切り替え前にその月が
+      画面のどの高さにあったかも保存
+    */
+    top: rect.top,
+  };
+}
+
+// -------------------------------------
+// 切り替え先を同じ年月に合わせる
+// -------------------------------------
+
+function alignViewToDate(view, position) {
+  if (!position) {
+    return;
+  }
+
+  const section = document.getElementById(`${view}-view`);
+
+  if (!section) {
+    return;
+  }
+
+  const targetRow = section.querySelector(
+    `.month-row[data-year="${position.year}"][data-month="${position.month}"]`,
+  );
+
+  if (!targetRow) {
+    return;
+  }
+
+  const rect = targetRow.getBoundingClientRect();
+
+  /*
+    切り替え前と同じ縦位置になるように
+    スクロール量を補正
+  */
+  const difference = rect.top - position.top;
+
+  window.scrollBy({
+    top: difference,
+    left: 0,
+    behavior: "auto",
+  });
+}
+
+// -------------------------------------
 // 画面切り替え
 // -------------------------------------
 
 function switchView(view) {
+  if (view !== "log" && view !== "plan" && view !== "news") {
+    return;
+  }
+
+  // 同じタブなら何もしない
+  if (view === currentView) {
+    return;
+  }
+
+  /*
+    切り替える前に
+    現在見ている年月と位置を保存
+  */
+  const currentPosition = getVisibleDatePosition(currentView);
+
   const tabLog = document.getElementById("tab-log");
+
   const tabPlan = document.getElementById("tab-plan");
+
   const tabNews = document.getElementById("tab-news");
 
-  // 一度すべてのactiveを外す
+  // activeをすべて解除
   tabLog.classList.remove("active");
   tabPlan.classList.remove("active");
   tabNews.classList.remove("active");
 
+  // -----------------------------------
+  // 実績
+  // -----------------------------------
+
   if (view === "log") {
     slider.className = "show-log";
+
     tabLog.classList.add("active");
-    currentView = "log";
   }
+
+  // -----------------------------------
+  // 予定
+  // -----------------------------------
 
   if (view === "plan") {
     slider.className = "show-plan";
+
     tabPlan.classList.add("active");
-    currentView = "plan";
   }
+
+  // -----------------------------------
+  // 社会
+  // -----------------------------------
 
   if (view === "news") {
     slider.className = "show-news";
+
     tabNews.classList.add("active");
-    currentView = "news";
   }
+
+  currentView = view;
+
+  /*
+    ブラウザが画面切り替えを認識してから
+    同じ年月へ位置を合わせる
+  */
+  requestAnimationFrame(() => {
+    alignViewToDate(view, currentPosition);
+  });
 }
 
 // -------------------------------------
@@ -67,14 +215,18 @@ function handleGesture() {
   const swipeThreshold = 50;
 
   const diffX = touchEndX - touchStartX;
+
   const diffY = touchEndY - touchStartY;
 
-  // 縦スクロールを横スワイプと誤認しないようにする
+  // 縦スクロールの場合は何もしない
   if (Math.abs(diffX) <= Math.abs(diffY)) {
     return;
   }
 
-  // 左へスワイプ
+  // -----------------------------------
+  // 左スワイプ
+  // -----------------------------------
+
   if (diffX < -swipeThreshold) {
     if (currentView === "log") {
       switchView("plan");
@@ -83,7 +235,10 @@ function handleGesture() {
     }
   }
 
-  // 右へスワイプ
+  // -----------------------------------
+  // 右スワイプ
+  // -----------------------------------
+
   if (diffX > swipeThreshold) {
     if (currentView === "news") {
       switchView("plan");
@@ -101,20 +256,26 @@ slider.addEventListener(
   "touchstart",
   (e) => {
     touchStartX = e.changedTouches[0].screenX;
+
     touchStartY = e.changedTouches[0].screenY;
   },
-  { passive: true },
+  {
+    passive: true,
+  },
 );
 
 slider.addEventListener(
   "touchend",
   (e) => {
     touchEndX = e.changedTouches[0].screenX;
+
     touchEndY = e.changedTouches[0].screenY;
 
     handleGesture();
   },
-  { passive: true },
+  {
+    passive: true,
+  },
 );
 
 // -------------------------------------
@@ -131,11 +292,15 @@ function createTimeline(container, type) {
     year < targetDate.getFullYear() ||
     (year === targetDate.getFullYear() && month <= targetDate.getMonth() + 1)
   ) {
-    // 年が変わったら年見出しを作る
+    // ---------------------------------
+    // 年見出し
+    // ---------------------------------
+
     if (year !== currentYearVal) {
       const yearHeader = document.createElement("div");
 
       yearHeader.className = "year-header";
+
       yearHeader.innerText = `${year}年`;
 
       container.appendChild(yearHeader);
@@ -143,43 +308,75 @@ function createTimeline(container, type) {
       currentYearVal = year;
     }
 
+    // ---------------------------------
+    // 保存ID
+    // ---------------------------------
+
     const id = `${type}-${year}-${month}`;
 
     const savedText = localStorage.getItem(id) || "";
 
+    // ---------------------------------
     // 月の行
+    // ---------------------------------
+
     const row = document.createElement("div");
 
     row.className = "month-row";
+
+    /*
+      ★年月同期のために追加
+    */
+    row.dataset.year = year;
+
+    row.dataset.month = month;
 
     if (savedText.trim() !== "") {
       row.classList.add("has-content");
     }
 
+    // ---------------------------------
     // 月表示
+    // ---------------------------------
+
     const monthLabel = document.createElement("div");
 
     monthLabel.className = "month-label";
+
     monthLabel.innerText = `${month}月`;
 
+    // ---------------------------------
     // タイムライン線
+    // ---------------------------------
+
     const divider = document.createElement("div");
 
     divider.className = "divider";
 
-    // 入力エリア
+    // ---------------------------------
+    // メモエリア
+    // ---------------------------------
+
     const memoArea = document.createElement("div");
 
     memoArea.className = "memo-area";
 
+    // ---------------------------------
     // テキストエリア
+    // ---------------------------------
+
     const textarea = document.createElement("textarea");
 
     textarea.id = id;
+
     textarea.placeholder = "---";
+
     textarea.value = savedText;
 
-    // 入力されたら自動保存
+    // ---------------------------------
+    // 自動保存
+    // ---------------------------------
+
     textarea.addEventListener("input", () => {
       localStorage.setItem(id, textarea.value);
 
@@ -189,12 +386,17 @@ function createTimeline(container, type) {
     memoArea.appendChild(textarea);
 
     row.appendChild(monthLabel);
+
     row.appendChild(divider);
+
     row.appendChild(memoArea);
 
     container.appendChild(row);
 
-    // 次の月へ
+    // ---------------------------------
+    // 次の月
+    // ---------------------------------
+
     month++;
 
     if (month > 12) {
@@ -233,9 +435,13 @@ function exportData() {
     }
   }
 
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json",
-  });
+  const blob = new Blob(
+    [JSON.stringify(data, null, 2)],
+
+    {
+      type: "application/json",
+    },
+  );
 
   const url = URL.createObjectURL(blob);
 
@@ -275,7 +481,10 @@ function importData(event) {
         return;
       }
 
-      // 現在のタイムラインデータだけ削除
+      // ---------------------------------
+      // 現在のデータを削除
+      // ---------------------------------
+
       const keysToDelete = [];
 
       for (let i = 0; i < localStorage.length; i++) {
@@ -294,7 +503,10 @@ function importData(event) {
         localStorage.removeItem(key);
       });
 
-      // バックアップを保存
+      // ---------------------------------
+      // バックアップを復元
+      // ---------------------------------
+
       Object.keys(data).forEach((key) => {
         if (
           key.startsWith("log-") ||
@@ -327,7 +539,7 @@ createTimeline(planContent, "plan");
 createTimeline(newsContent, "news");
 
 // -------------------------------------
-// 現在の年月までスクロール
+// 最初に現在年月を表示
 // -------------------------------------
 
 window.onload = () => {
