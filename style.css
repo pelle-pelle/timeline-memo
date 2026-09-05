@@ -1,197 +1,444 @@
-body {
-  font-family: -apple-system, sans-serif;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; /* 横スクロールバーを出さない */
+/* =====================================
+   基本
+===================================== */
+
+* {
+  box-sizing: border-box;
 }
 
-/* タブヘッダー */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+
+  margin: 0;
+  padding: 0;
+
+  overflow-x: hidden;
+
+  background: #fff;
+
+  color: #333;
+}
+
+/* =====================================
+   ヘッダー
+===================================== */
+
 header {
   width: 100%;
+
   background: #fff;
+
   position: fixed;
+
   top: 0;
+  left: 0;
+
   z-index: 1000;
+
   border-bottom: 1px solid #ddd;
 }
 
+/* =====================================
+   タブ
+===================================== */
+
 .tab-container {
   display: flex;
+
+  width: 100%;
+
   max-width: 600px;
+
   margin: 0 auto;
 }
 
 .tab {
   flex: 1;
-  padding: 15px;
+
+  padding: 10px 4px 8px;
+
   border: none;
+
   background: none;
-  font-size: 1rem;
+
+  font-size: 0.95rem;
+
   font-weight: bold;
+
   color: #999;
+
   cursor: pointer;
-  transition: 0.3s;
+
+  transition: 0.25s;
+
+  border-bottom: 3px solid transparent;
 }
 
-.tab.active {
+/* Log / Plan / News */
+.tab span {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 0.65rem;
+
+  font-weight: normal;
+
+  opacity: 0.7;
+}
+
+/* =====================================
+   アクティブタブ
+===================================== */
+
+/* 実績 */
+#tab-log.active {
   color: #4a90e2;
-  border-bottom: 3px solid #4a90e2;
+
+  border-bottom-color: #4a90e2;
 }
 
-/* スライダー構造 */
-#view-viewport {
-  width: 100vw;
-  margin-top: 55px; /* ヘッダー分 */
-  overflow: hidden;
+/* 予定 */
+#tab-plan.active {
+  color: #e77f91;
+
+  border-bottom-color: #e77f91;
 }
 
-#view-slider {
-  display: flex;
-  width: 200vw; /* 2画面分 */
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+/* 社会 */
+#tab-news.active {
+  color: #65798e;
+
+  border-bottom-color: #65798e;
 }
 
-/* 表示切り替え用クラス */
-#view-slider.show-log {
-  transform: translateX(0);
-}
-#view-slider.show-plan {
-  transform: translateX(-100vw);
-}
+/* =====================================
+   設定ボタン
+===================================== */
 
-.timeline-view {
-  width: 100vw;
-  min-height: 100vh;
-}
-
-.timeline-content {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0 15px 100px 15px;
-}
-
-/* 共通パーツ（年ヘッダー・行） */
-.year-header {
-  position: sticky;
-  top: 54px; /* タブの下に張り付く */
-  background-color: #f8f8f8;
-  padding: 10px 15px;
-  font-weight: bold;
-  z-index: 100;
-  border-bottom: 1px solid #eee;
-}
-
-.month-row {
-  display: flex;
-  border-bottom: 1px solid #f9f9f9;
-  transition: background-color 0.3s ease;
-}
-
-.has-content {
-  background-color: #fcf8f0;
-}
-
-.month-label {
-  width: 50px;
-  padding: 20px 0;
-  text-align: center;
-  font-weight: bold;
-  color: #aaa;
-  flex-shrink: 0;
-}
-
-.divider {
-  width: 2px;
-  background-color: #eee;
-  align-self: stretch;
-  position: relative;
-}
-
-.divider::after {
-  content: "";
-  position: absolute;
-  top: 25px;
-  left: -3px;
-  width: 8px;
-  height: 8px;
-  background: #ddd;
-  border-radius: 50%;
-}
-
-/* 1. 実績 (Log) の入力あり：淡いベージュ */
-#log-view .has-content {
-  background-color: #fcf8f0;
-}
-
-/* 2. 予定 (Plan) の入力あり：淡いピンク */
-#plan-view .has-content {
-  background-color: #fff5f7; /* さくら色のような淡いピンク */
-}
-
-/* ドットの色もそれぞれのテーマに合わせる */
-
-/* Log：青系のドット */
-#log-view .has-content .divider::after {
-  background: #4a90e2;
-}
-
-/* Plan：ピンク・赤系のドット */
-#plan-view .has-content .divider::after {
-  background: #ff8da1;
-}
-
-.memo-area {
-  flex: 1;
-  padding: 15px;
-}
-
-textarea {
-  width: 100%;
-  border: none;
-  font-size: 1rem;
-  resize: none;
-  outline: none;
-  background: transparent;
-  field-sizing: content;
-  min-height: 2em;
-}
-
-/* 設定ボタン（歯車） */
 .tab-settings {
+  flex-shrink: 0;
+
+  width: 48px;
+
   background: none;
+
   border: none;
-  font-size: 1.2rem;
-  padding: 0 15px;
+
+  font-size: 1.15rem;
+
   cursor: pointer;
+
+  color: #777;
 }
 
-/* 設定メニューの枠 */
+/* =====================================
+   設定メニュー
+===================================== */
+
 #settings-menu {
   background: #444;
+
   padding: 10px;
+
   display: flex;
-  justify-content: space-around;
+
+  justify-content: center;
+
   gap: 10px;
 }
 
-/* 隠すための設定 */
 #settings-menu.hidden {
   display: none;
 }
 
-/* メニュー内のボタンとラベル */
 #settings-menu button,
 .file-label {
   background: #666;
+
   color: white;
+
   border: none;
-  padding: 8px 12px;
+
+  padding: 9px 14px;
+
   border-radius: 5px;
+
   font-size: 0.8rem;
+
   cursor: pointer;
+
   text-align: center;
 }
 
 .file-label {
   display: inline-block;
+}
+
+/* =====================================
+   スライダー
+===================================== */
+
+#view-viewport {
+  width: 100vw;
+
+  margin-top: 58px;
+
+  overflow: hidden;
+}
+
+#view-slider {
+  display: flex;
+
+  /*
+    Log
+    Plan
+    News
+
+    の3画面なので300vw
+  */
+  width: 300vw;
+
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* =====================================
+   表示位置
+===================================== */
+
+/* 実績 */
+#view-slider.show-log {
+  transform: translateX(0);
+}
+
+/* 予定 */
+#view-slider.show-plan {
+  transform: translateX(-100vw);
+}
+
+/* 社会 */
+#view-slider.show-news {
+  transform: translateX(-200vw);
+}
+
+/* =====================================
+   各タイムライン画面
+===================================== */
+
+.timeline-view {
+  width: 100vw;
+
+  flex-shrink: 0;
+
+  min-height: 100vh;
+}
+
+.timeline-content {
+  width: 100%;
+
+  max-width: 600px;
+
+  margin: 0 auto;
+
+  padding: 0 15px 100px;
+}
+
+/* =====================================
+   年
+===================================== */
+
+.year-header {
+  position: sticky;
+
+  top: 57px;
+
+  background-color: rgba(248, 248, 248, 0.96);
+
+  padding: 10px 15px;
+
+  font-weight: bold;
+
+  z-index: 100;
+
+  border-bottom: 1px solid #eee;
+
+  backdrop-filter: blur(8px);
+
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* =====================================
+   月
+===================================== */
+
+.month-row {
+  display: flex;
+
+  min-height: 65px;
+
+  border-bottom: 1px solid #f2f2f2;
+
+  transition: background-color 0.25s ease;
+}
+
+.month-label {
+  width: 50px;
+
+  padding: 20px 0;
+
+  text-align: center;
+
+  font-weight: bold;
+
+  color: #aaa;
+
+  flex-shrink: 0;
+}
+
+/* =====================================
+   タイムラインの縦線
+===================================== */
+
+.divider {
+  width: 2px;
+
+  background-color: #eee;
+
+  align-self: stretch;
+
+  position: relative;
+
+  flex-shrink: 0;
+}
+
+.divider::after {
+  content: "";
+
+  position: absolute;
+
+  top: 25px;
+
+  left: -3px;
+
+  width: 8px;
+  height: 8px;
+
+  background: #ddd;
+
+  border-radius: 50%;
+
+  transition: background-color 0.25s ease;
+}
+
+/* =====================================
+   メモ
+===================================== */
+
+.memo-area {
+  flex: 1;
+
+  min-width: 0;
+
+  padding: 15px;
+}
+
+textarea {
+  display: block;
+
+  width: 100%;
+
+  min-height: 2em;
+
+  padding: 0;
+
+  border: none;
+
+  outline: none;
+
+  resize: none;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  font-size: 1rem;
+
+  line-height: 1.6;
+
+  color: #333;
+
+  field-sizing: content;
+}
+
+textarea::placeholder {
+  color: #ccc;
+}
+
+/* =====================================
+   入力済み：実績 Log
+===================================== */
+
+#log-view .has-content {
+  background-color: #fcf8f0;
+}
+
+#log-view .has-content .divider::after {
+  background: #4a90e2;
+}
+
+/* =====================================
+   入力済み：予定 Plan
+===================================== */
+
+#plan-view .has-content {
+  background-color: #fff5f7;
+}
+
+#plan-view .has-content .divider::after {
+  background: #ff8da1;
+}
+
+/* =====================================
+   入力済み：社会 News
+===================================== */
+
+#news-view .has-content {
+  background-color: #f3f6f8;
+}
+
+#news-view .has-content .divider::after {
+  background: #65798e;
+}
+
+/* =====================================
+   スマートフォン
+===================================== */
+
+@media screen and (max-width: 480px) {
+  .timeline-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .tab {
+    font-size: 0.9rem;
+  }
+
+  .tab span {
+    font-size: 0.6rem;
+  }
+
+  .tab-settings {
+    width: 42px;
+    padding: 0;
+  }
+
+  .month-label {
+    width: 46px;
+  }
+
+  .memo-area {
+    padding: 15px 12px;
+  }
 }
