@@ -6,9 +6,9 @@ const newsContent = document.querySelector("#news-view .timeline-content");
 
 const slider = document.getElementById("view-slider");
 
-// -------------------------------------
+// =====================================
 // 基本設定
-// -------------------------------------
+// =====================================
 
 let startYear = 1980;
 
@@ -20,176 +20,191 @@ targetDate.setMonth(now.getMonth() + 12);
 // 現在表示している画面
 let currentView = "log";
 
-// スワイプ判定用
+// スワイプ判定
 let touchStartX = 0;
 let touchStartY = 0;
 let touchEndX = 0;
 let touchEndY = 0;
 
-// -------------------------------------
+// =====================================
+// 指定した画面を取得
+// =====================================
+
+function getViewElement(view) {
+  return document.getElementById(`${view}-view`);
+}
+
+// =====================================
 // 現在見ている年月を取得
-// -------------------------------------
+// =====================================
 
-function getVisibleDatePosition(view) {
-  const section = document.getElementById(`${view}-view`);
+function getScrollAnchor(viewName) {
+  const view = getViewElement(viewName);
 
-  if (!section) {
+  if (!view) {
     return null;
   }
 
-  const rows = section.querySelectorAll(".month-row");
+  const rows = view.querySelectorAll(".month-row");
 
   if (rows.length === 0) {
     return null;
   }
 
-  /*
-    画面の中央より少し上あたりを
-    「現在見ている年月」として判定します。
-  */
-  const referenceY = window.innerHeight * 0.4;
+  const viewRect = view.getBoundingClientRect();
 
-  let closestRow = null;
+  /*
+    画面の上から40%の位置を
+    「現在見ている場所」とします。
+  */
+  const referenceY = viewRect.top + view.clientHeight * 0.4;
+
+  let selectedRow = null;
   let closestDistance = Infinity;
 
   rows.forEach((row) => {
     const rect = row.getBoundingClientRect();
 
-    /*
-      referenceY がその月の行の中にある場合は
-      その月を優先
-    */
+    // 基準位置がその月の中にある
     if (rect.top <= referenceY && rect.bottom >= referenceY) {
-      closestRow = row;
+      selectedRow = row;
       closestDistance = 0;
+
       return;
     }
 
-    /*
-      それ以外の場合は
-      referenceY に一番近い月を探す
-    */
-    const rowCenter = rect.top + rect.height / 2;
+    // 一番近い月を探す
+    const center = rect.top + rect.height / 2;
 
-    const distance = Math.abs(rowCenter - referenceY);
+    const distance = Math.abs(center - referenceY);
 
     if (distance < closestDistance) {
       closestDistance = distance;
-      closestRow = row;
+      selectedRow = row;
     }
   });
 
-  if (!closestRow) {
+  if (!selectedRow) {
     return null;
   }
 
-  const rect = closestRow.getBoundingClientRect();
+  const rect = selectedRow.getBoundingClientRect();
+
+  /*
+    その月の中で
+    どのくらいの位置を見ているか
+
+    0 = 月の先頭
+    0.5 = 月の中央
+    1 = 月の最後
+  */
+  let progress = (referenceY - rect.top) / rect.height;
+
+  progress = Math.max(0, Math.min(1, progress));
 
   return {
-    year: closestRow.dataset.year,
-    month: closestRow.dataset.month,
+    year: selectedRow.dataset.year,
 
-    /*
-      切り替え前にその月が
-      画面のどの高さにあったかも保存
-    */
-    top: rect.top,
+    month: selectedRow.dataset.month,
+
+    progress: progress,
   };
 }
 
-// -------------------------------------
+// =====================================
 // 切り替え先を同じ年月に合わせる
-// -------------------------------------
+// =====================================
 
-function alignViewToDate(view, position) {
-  if (!position) {
+function syncViewToAnchor(targetViewName, anchor) {
+  if (!anchor) {
     return;
   }
 
-  const section = document.getElementById(`${view}-view`);
+  const view = getViewElement(targetViewName);
 
-  if (!section) {
+  if (!view) {
     return;
   }
 
-  const targetRow = section.querySelector(
-    `.month-row[data-year="${position.year}"][data-month="${position.month}"]`,
+  const targetRow = view.querySelector(
+    `.month-row[data-year="${anchor.year}"][data-month="${anchor.month}"]`,
   );
 
   if (!targetRow) {
     return;
   }
 
-  const rect = targetRow.getBoundingClientRect();
+  const viewRect = view.getBoundingClientRect();
+
+  const referenceY = viewRect.top + view.clientHeight * 0.4;
+
+  const rowRect = targetRow.getBoundingClientRect();
 
   /*
-    切り替え前と同じ縦位置になるように
-    スクロール量を補正
+    元画面で見ていた
+    「月の中での位置」を再現
   */
-  const difference = rect.top - position.top;
+  const targetPointY = rowRect.top + rowRect.height * anchor.progress;
 
-  window.scrollBy({
-    top: difference,
-    left: 0,
-    behavior: "auto",
-  });
+  const difference = targetPointY - referenceY;
+
+  /*
+    destination側だけを
+    独立してスクロール
+  */
+  view.scrollTop += difference;
 }
 
-// -------------------------------------
+// =====================================
 // 画面切り替え
-// -------------------------------------
+// =====================================
 
 function switchView(view) {
   if (view !== "log" && view !== "plan" && view !== "news") {
     return;
   }
 
-  // 同じタブなら何もしない
   if (view === currentView) {
     return;
   }
 
   /*
-    切り替える前に
-    現在見ている年月と位置を保存
+    現在見ている年月を取得
   */
-  const currentPosition = getVisibleDatePosition(currentView);
+  const anchor = getScrollAnchor(currentView);
 
+  /*
+    画面が見える前に
+    切り替え先を同じ年月へ移動
+  */
+  syncViewToAnchor(view, anchor);
+
+  // タブ
   const tabLog = document.getElementById("tab-log");
 
   const tabPlan = document.getElementById("tab-plan");
 
   const tabNews = document.getElementById("tab-news");
 
-  // activeをすべて解除
   tabLog.classList.remove("active");
   tabPlan.classList.remove("active");
   tabNews.classList.remove("active");
 
-  // -----------------------------------
   // 実績
-  // -----------------------------------
-
   if (view === "log") {
     slider.className = "show-log";
 
     tabLog.classList.add("active");
   }
 
-  // -----------------------------------
   // 予定
-  // -----------------------------------
-
   if (view === "plan") {
     slider.className = "show-plan";
 
     tabPlan.classList.add("active");
   }
 
-  // -----------------------------------
   // 社会
-  // -----------------------------------
-
   if (view === "news") {
     slider.className = "show-news";
 
@@ -197,19 +212,11 @@ function switchView(view) {
   }
 
   currentView = view;
-
-  /*
-    ブラウザが画面切り替えを認識してから
-    同じ年月へ位置を合わせる
-  */
-  requestAnimationFrame(() => {
-    alignViewToDate(view, currentPosition);
-  });
 }
 
-// -------------------------------------
+// =====================================
 // スワイプ判定
-// -------------------------------------
+// =====================================
 
 function handleGesture() {
   const swipeThreshold = 50;
@@ -218,15 +225,15 @@ function handleGesture() {
 
   const diffY = touchEndY - touchStartY;
 
-  // 縦スクロールの場合は何もしない
+  /*
+    縦方向の動きの方が大きい場合は
+    通常の縦スクロール
+  */
   if (Math.abs(diffX) <= Math.abs(diffY)) {
     return;
   }
 
-  // -----------------------------------
   // 左スワイプ
-  // -----------------------------------
-
   if (diffX < -swipeThreshold) {
     if (currentView === "log") {
       switchView("plan");
@@ -235,10 +242,7 @@ function handleGesture() {
     }
   }
 
-  // -----------------------------------
   // 右スワイプ
-  // -----------------------------------
-
   if (diffX > swipeThreshold) {
     if (currentView === "news") {
       switchView("plan");
@@ -248,9 +252,9 @@ function handleGesture() {
   }
 }
 
-// -------------------------------------
+// =====================================
 // タッチイベント
-// -------------------------------------
+// =====================================
 
 slider.addEventListener(
   "touchstart",
@@ -278,9 +282,9 @@ slider.addEventListener(
   },
 );
 
-// -------------------------------------
+// =====================================
 // タイムライン生成
-// -------------------------------------
+// =====================================
 
 function createTimeline(container, type) {
   let year = startYear;
@@ -292,10 +296,7 @@ function createTimeline(container, type) {
     year < targetDate.getFullYear() ||
     (year === targetDate.getFullYear() && month <= targetDate.getMonth() + 1)
   ) {
-    // ---------------------------------
     // 年見出し
-    // ---------------------------------
-
     if (year !== currentYearVal) {
       const yearHeader = document.createElement("div");
 
@@ -308,62 +309,41 @@ function createTimeline(container, type) {
       currentYearVal = year;
     }
 
-    // ---------------------------------
-    // 保存ID
-    // ---------------------------------
-
     const id = `${type}-${year}-${month}`;
 
     const savedText = localStorage.getItem(id) || "";
 
-    // ---------------------------------
     // 月の行
-    // ---------------------------------
-
     const row = document.createElement("div");
 
     row.className = "month-row";
 
     /*
-      ★年月同期のために追加
+      年月同期に使用
     */
     row.dataset.year = year;
-
     row.dataset.month = month;
 
     if (savedText.trim() !== "") {
       row.classList.add("has-content");
     }
 
-    // ---------------------------------
-    // 月表示
-    // ---------------------------------
-
+    // 月
     const monthLabel = document.createElement("div");
 
     monthLabel.className = "month-label";
 
     monthLabel.innerText = `${month}月`;
 
-    // ---------------------------------
-    // タイムライン線
-    // ---------------------------------
-
+    // 縦線
     const divider = document.createElement("div");
 
     divider.className = "divider";
 
-    // ---------------------------------
-    // メモエリア
-    // ---------------------------------
-
+    // メモ
     const memoArea = document.createElement("div");
 
     memoArea.className = "memo-area";
-
-    // ---------------------------------
-    // テキストエリア
-    // ---------------------------------
 
     const textarea = document.createElement("textarea");
 
@@ -373,10 +353,7 @@ function createTimeline(container, type) {
 
     textarea.value = savedText;
 
-    // ---------------------------------
     // 自動保存
-    // ---------------------------------
-
     textarea.addEventListener("input", () => {
       localStorage.setItem(id, textarea.value);
 
@@ -393,10 +370,7 @@ function createTimeline(container, type) {
 
     container.appendChild(row);
 
-    // ---------------------------------
     // 次の月
-    // ---------------------------------
-
     month++;
 
     if (month > 12) {
@@ -406,9 +380,9 @@ function createTimeline(container, type) {
   }
 }
 
-// -------------------------------------
+// =====================================
 // 設定メニュー
-// -------------------------------------
+// =====================================
 
 function toggleSettings() {
   const menu = document.getElementById("settings-menu");
@@ -416,9 +390,9 @@ function toggleSettings() {
   menu.classList.toggle("hidden");
 }
 
-// -------------------------------------
-// JSONバックアップ
-// -------------------------------------
+// =====================================
+// JSON書き出し
+// =====================================
 
 function exportData() {
   const data = {};
@@ -456,9 +430,9 @@ function exportData() {
   URL.revokeObjectURL(url);
 }
 
-// -------------------------------------
-// JSON復元
-// -------------------------------------
+// =====================================
+// JSON読み込み
+// =====================================
 
 function importData(event) {
   const file = event.target.files[0];
@@ -481,10 +455,6 @@ function importData(event) {
         return;
       }
 
-      // ---------------------------------
-      // 現在のデータを削除
-      // ---------------------------------
-
       const keysToDelete = [];
 
       for (let i = 0; i < localStorage.length; i++) {
@@ -502,10 +472,6 @@ function importData(event) {
       keysToDelete.forEach((key) => {
         localStorage.removeItem(key);
       });
-
-      // ---------------------------------
-      // バックアップを復元
-      // ---------------------------------
 
       Object.keys(data).forEach((key) => {
         if (
@@ -528,9 +494,34 @@ function importData(event) {
   reader.readAsText(file);
 }
 
-// -------------------------------------
+// =====================================
+// 指定年月を画面中央付近へ
+// =====================================
+
+function scrollToMonth(viewName, year, month) {
+  const view = getViewElement(viewName);
+
+  if (!view) {
+    return;
+  }
+
+  const target = view.querySelector(
+    `.month-row[data-year="${year}"][data-month="${month}"]`,
+  );
+
+  if (!target) {
+    return;
+  }
+
+  const targetTop =
+    target.offsetTop - view.clientHeight * 0.4 + target.offsetHeight / 2;
+
+  view.scrollTop = Math.max(0, targetTop);
+}
+
+// =====================================
 // 初期化
-// -------------------------------------
+// =====================================
 
 createTimeline(logContent, "log");
 
@@ -538,18 +529,18 @@ createTimeline(planContent, "plan");
 
 createTimeline(newsContent, "news");
 
-// -------------------------------------
-// 最初に現在年月を表示
-// -------------------------------------
+// =====================================
+// 最初は3画面すべて現在年月へ
+// =====================================
 
-window.onload = () => {
-  const currentId = `log-${now.getFullYear()}-${now.getMonth() + 1}`;
+window.addEventListener("load", () => {
+  const year = now.getFullYear();
 
-  const target = document.getElementById(currentId);
+  const month = now.getMonth() + 1;
 
-  if (target) {
-    target.scrollIntoView({
-      block: "center",
-    });
-  }
-};
+  scrollToMonth("log", year, month);
+
+  scrollToMonth("plan", year, month);
+
+  scrollToMonth("news", year, month);
+});

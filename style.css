@@ -6,6 +6,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
@@ -13,7 +18,7 @@ body {
   margin: 0;
   padding: 0;
 
-  overflow-x: hidden;
+  overflow: hidden;
 
   background: #fff;
 
@@ -26,6 +31,8 @@ body {
 
 header {
   width: 100%;
+
+  height: 58px;
 
   background: #fff;
 
@@ -47,6 +54,8 @@ header {
   display: flex;
 
   width: 100%;
+
+  height: 58px;
 
   max-width: 600px;
 
@@ -92,21 +101,18 @@ header {
    アクティブタブ
 ===================================== */
 
-/* 実績 */
 #tab-log.active {
   color: #4a90e2;
 
   border-bottom-color: #4a90e2;
 }
 
-/* 予定 */
 #tab-plan.active {
   color: #e77f91;
 
   border-bottom-color: #e77f91;
 }
 
-/* 社会 */
 #tab-news.active {
   color: #65798e;
 
@@ -138,6 +144,14 @@ header {
 ===================================== */
 
 #settings-menu {
+  position: absolute;
+
+  top: 58px;
+
+  left: 0;
+
+  width: 100%;
+
   background: #444;
 
   padding: 10px;
@@ -147,6 +161,8 @@ header {
   justify-content: center;
 
   gap: 10px;
+
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 #settings-menu.hidden {
@@ -177,35 +193,38 @@ header {
 }
 
 /* =====================================
-   スライダー
+   表示領域
 ===================================== */
 
 #view-viewport {
+  position: fixed;
+
+  top: 58px;
+
+  left: 0;
+
   width: 100vw;
 
-  margin-top: 58px;
+  height: calc(100vh - 58px);
+
+  height: calc(100dvh - 58px);
 
   overflow: hidden;
 }
 
+/* =====================================
+   横スライダー
+===================================== */
+
 #view-slider {
   display: flex;
 
-  /*
-    Log
-    Plan
-    News
-
-    の3画面なので300vw
-  */
   width: 300vw;
+
+  height: 100%;
 
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
-
-/* =====================================
-   表示位置
-===================================== */
 
 /* 実績 */
 #view-slider.show-log {
@@ -223,16 +242,34 @@ header {
 }
 
 /* =====================================
-   各タイムライン画面
+   各画面
 ===================================== */
 
 .timeline-view {
   width: 100vw;
 
+  height: 100%;
+
   flex-shrink: 0;
 
-  min-height: 100vh;
+  /*
+    ★重要
+    各画面が独立して
+    縦スクロールする
+  */
+
+  overflow-y: auto;
+
+  overflow-x: hidden;
+
+  -webkit-overflow-scrolling: touch;
+
+  overscroll-behavior-y: contain;
 }
+
+/* =====================================
+   タイムライン内容
+===================================== */
 
 .timeline-content {
   width: 100%;
@@ -245,13 +282,17 @@ header {
 }
 
 /* =====================================
-   年
+   年見出し
 ===================================== */
 
 .year-header {
   position: sticky;
 
-  top: 57px;
+  /*
+    独立スクロールになったので
+    以前の57pxではなく0
+  */
+  top: 0;
 
   background-color: rgba(248, 248, 248, 0.96);
 
@@ -322,6 +363,7 @@ header {
   left: -3px;
 
   width: 8px;
+
   height: 8px;
 
   background: #ddd;
@@ -376,7 +418,7 @@ textarea::placeholder {
 }
 
 /* =====================================
-   入力済み：実績 Log
+   実績 Log
 ===================================== */
 
 #log-view .has-content {
@@ -388,7 +430,7 @@ textarea::placeholder {
 }
 
 /* =====================================
-   入力済み：予定 Plan
+   予定 Plan
 ===================================== */
 
 #plan-view .has-content {
@@ -400,7 +442,7 @@ textarea::placeholder {
 }
 
 /* =====================================
-   入力済み：社会 News
+   社会 News
 ===================================== */
 
 #news-view .has-content {
@@ -418,6 +460,7 @@ textarea::placeholder {
 @media screen and (max-width: 480px) {
   .timeline-content {
     padding-left: 10px;
+
     padding-right: 10px;
   }
 
@@ -431,6 +474,7 @@ textarea::placeholder {
 
   .tab-settings {
     width: 42px;
+
     padding: 0;
   }
 
